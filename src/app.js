@@ -10,7 +10,7 @@ app.use(helmet()) // security lọc http chặn đọc cookie
 app.use(compression()) // giảm bớt băng thông
 
 // init db
-// require('./dbs/init.mongodb.lv0')
+require('./dbs/init.mongodb')
 
 // init routes
 app.get("/", (req, res, next) => {
