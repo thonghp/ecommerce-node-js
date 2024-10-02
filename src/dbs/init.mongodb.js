@@ -18,8 +18,15 @@ class Database {
       mongoose.set('debug', { color: true })
     }
 
+    // default maxPoolSize = 100
+    /*
+     * nhóm kết nối là tập hợp các kết nối của database mà có thể tái sử dụng được duy trì bởi database
+     * khi ứng dụng yêu cầu kết nối nó sẽ kiểm tra nhóm kết nối trong poolsize, nếu có thì nó sẽ sử
+     * dụng cho kết nối mới còn không có kết nối nào thì nó sẽ tạo kết nối mới và thêm vào trong nhóm
+     * cơ chế này giống connection pool
+     */
     mongoose
-      .connect(connectString)
+      .connect(connectString, { maxPoolSize: 50 })
       .then((_) => {
         console.log(`Connected mongodb successful`, countConnect())
       })
