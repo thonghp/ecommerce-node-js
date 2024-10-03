@@ -11,8 +11,8 @@ app.use(compression()) // giảm bớt băng thông
 
 // init db
 require('./dbs/init.mongodb')
-const { checkOverload } = require('./helpers/check.connect')
-checkOverload()
+// const { checkOverload } = require('./helpers/check.connect')
+// checkOverload()
 
 // init routes
 app.get('/', (req, res, next) => {

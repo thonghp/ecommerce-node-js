@@ -3,9 +3,11 @@
 // nên dùng cách singleton này để connect db
 const mongoose = require('mongoose')
 const { countConnect } = require('../helpers/check.connect')
+const {
+  db: { user, pw, db },
+} = require('../configs/config.mongodb')
 
-const connectString =
-  'mongodb+srv://demo:Lm46unV%40nWYpWVh@cluster0demo.vn9ld.mongodb.net/nodejs1'
+const connectString = `mongodb+srv://${user}:${pw}@cluster0demo.vn9ld.mongodb.net/${db}`
 
 class Database {
   constructor() {
@@ -28,7 +30,8 @@ class Database {
     mongoose
       .connect(connectString, { maxPoolSize: 50 })
       .then((_) => {
-        console.log(`Connected mongodb successful`, countConnect())
+        countConnect()
+        console.log(`Connected mongodb successful`)
       })
       .catch((err) => console.log('Error connect'))
   }
