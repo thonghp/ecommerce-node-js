@@ -2,7 +2,7 @@
 
 const shopModel = require('../models/shop.model')
 const bcrypt = require('bcrypt')
-const crypto = require('crypto')
+const crypto = require('node:crypto')
 const KeyTokenService = require('./keyToken.service')
 const { createTokenPair } = require('../auth/authUtils')
 const { getInfoData } = require('../utils')
@@ -35,39 +35,60 @@ class AccessService {
       })
 
       if (newShop) {
-        const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
-          modulusLength: 4096,
-          publicKeyEncoding: {
-            type: 'pkcs1',
-            format: 'pem',
-          },
-          privateKeyEncoding: {
-            type: 'pkcs1',
-            format: 'pem',
-          },
-        })
+        // cách cơ bản
+        const privateKey = crypto.randomBytes(64).toString('hex')
+        const publicKey = crypto.randomBytes(64).toString('hex')
+
+        // cách nâng cao
+        // const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
+        //   modulusLength: 4096,
+        //   publicKeyEncoding: {
+        //     type: 'pkcs1',
+        //     format: 'pem',
+        //   },
+        //   privateKeyEncoding: {
+        //     type: 'pkcs1',
+        //     format: 'pem',
+        //   },
+        // })
         console.log({ privateKey, publicKey })
 
         // save publicKey into database
-        const publicKeyString = await KeyTokenService.createKeyToken({
+        const keyStore = await KeyTokenService.createKeyToken({
           userId: newShop._id,
           publicKey,
+          privateKey,
         })
 
-        if (!publicKeyString) {
+        // cách nâng cao
+        // const publicKeyString = await KeyTokenService.createKeyToken({
+        //   userId: newShop._id,
+        //   publicKey,
+        // })
+
+        // if (!publicKeyString) { // cách nâng cao
+        if (!keyStore) {
           return {
             code: 'xxxx',
-            message: 'publicKeyString error!',
+            message: 'keyStore error!',
+            // message: 'publicKeyString error!',
           }
         }
-        console.log(`publicKeyString:`, publicKeyString)
-        const publicKeyObject = crypto.createPublicKey(publicKeyString) // convert string to object
 
-        console.log(`publicKeyObject:`, publicKeyObject)
+        // cách nâng cao
+        // console.log(`publicKeyString:`, publicKeyString)
+        // const publicKeyObject = crypto.createPublicKey(publicKeyString) // convert string to object
+        // console.log(`publicKeyObject:`, publicKeyObject)
+
+        // const tokens = await createTokenPair(
+        //   { userId: newShop._id, email },
+        //   publicKeyString,
+        //   privateKey
+        // )
 
         const tokens = await createTokenPair(
           { userId: newShop._id, email },
-          publicKeyString,
+          publicKey,
           privateKey
         )
         console.log('created token successful', tokens)

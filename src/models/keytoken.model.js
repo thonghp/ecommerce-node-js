@@ -1,7 +1,7 @@
 'use strict'
 
 // !mdbgum
-const { model, Schema } = require('mongoose') // Erase if already required
+const { model, Schema } = require('mongoose')
 const DOCUMENT_NAME = 'Key'
 const COLLECTION_NAME = 'Keys'
 
@@ -9,9 +9,13 @@ const COLLECTION_NAME = 'Keys'
 const keyTokenSchema = new Schema(
   {
     user: {
-      type: Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId, // reference to the user's objectid in the shop model
       required: true,
-      ref: 'shop',
+      ref: 'shop', // reference to the document name of the shop model
+    },
+    privateKey: {
+      type: String,
+      required: true,
     },
     publicKey: {
       type: String,
