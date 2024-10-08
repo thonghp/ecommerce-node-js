@@ -1,5 +1,6 @@
 'use strict'
 
+const { type } = require('express/lib/response')
 // !mdbgum
 const { model, Schema } = require('mongoose') // Erase if already required
 const DOCUMENT_NAME = 'Key'
@@ -12,6 +13,10 @@ const keyTokenSchema = new Schema(
       type: Schema.Types.ObjectId,
       required: true,
       ref: 'shop',
+    },
+    privateKey: {
+      type: String,
+      required: true,
     },
     publicKey: {
       type: String,
