@@ -1,13 +1,16 @@
 'use strict'
 
 const express = require('express')
+const { apiKey, permission } = require('../auth/checkAuth')
 const router = express.Router()
 
-// router.get('/', (req, res, next) => {
-//   return res.status(200).json({
-//     message: 'hello',
-//   })
-// })
+// check apiKey
+router.use(apiKey)
+// check permission
+router.use(permission('0000'))
+
+// check permission có quyền truy cập không
+
 router.use('/v1/api', require('./access'))
 // yarn start - curl http://localhost:3055/
 
