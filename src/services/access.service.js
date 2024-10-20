@@ -6,6 +6,7 @@ const crypto = require('node:crypto')
 const KeyTokenService = require('./keyToken.service')
 const { createTokenPair } = require('../auth/authUtils')
 const { getInfoData } = require('../utils')
+const { BadRequestError } = require('../core/error.response')
 
 const RoleShop = {
   SHOP: 'SHOP',
@@ -16,13 +17,14 @@ const RoleShop = {
 
 class AccessService {
   static signup = async ({ name, email, password }) => {
-    try {
+    // try {
       const holderShop = await shopModel.findOne({ email }).lean()
       if (holderShop) {
-        return {
-          code: 'xxxx',
-          message: 'Email already register!',
-        }
+        // return {
+        //   code: 'xxxx',
+        //   message: 'Error: Email already exists',
+        // }
+        throw new BadRequestError('Error: Email already exists')
       }
 
       // 10 là đẹp lớn hơn thì cpu phải mạnh
@@ -51,7 +53,7 @@ class AccessService {
         //     format: 'pem',
         //   },
         // })
-        console.log({ privateKey, publicKey })
+        // console.log({ privateKey, publicKey })
 
         // save publicKey into database
         const keyStore = await KeyTokenService.createKeyToken({
@@ -108,13 +110,13 @@ class AccessService {
         code: 200,
         metadata: null,
       }
-    } catch (error) {
-      return {
-        code: 'xxx',
-        message: error.message,
-        status: 'error',
-      }
-    }
+    // } catch (error) {
+    //   return {
+    //     code: 'xxx',
+    //     message: error.message,
+    //     status: 'error',
+    //   }
+    // }
   }
 }
 

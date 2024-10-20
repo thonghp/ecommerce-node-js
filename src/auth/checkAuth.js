@@ -36,7 +36,7 @@ const permission = (permission) => {
       })
     }
 
-    console.log('permission::', req.objKey.permissions)
+    // console.log('permission::', req.objKey.permissions)
     const validPermission = req.objKey.permissions.includes(permission)
     if (!validPermission) {
       return res.status(403).json({
@@ -48,7 +48,19 @@ const permission = (permission) => {
   }
 }
 
+/*
+ * hàm xử lý bắt lỗi không cần try catch, khi lỗi xảy ra, catch sẽ tự động gọi next() với lỗi đó và lỗi
+ * sẽ được truyền tới middleware xử lý lỗi
+ * thường sử dụng khi ta không muốn tạo try catch hoặc có 100 route thì ta phải copy cả 100 cái try catch
+ */
+const asyncHandler = (fn) => {
+  return (req, res, next) => {
+    fn(req, res, next).catch(next)
+  }
+}
+
 module.exports = {
   apiKey,
   permission,
+  asyncHandler,
 }

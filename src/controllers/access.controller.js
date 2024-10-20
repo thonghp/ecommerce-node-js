@@ -1,16 +1,26 @@
 'use strict'
 
+const { CREATED } = require('../core/success.response')
 const AccessService = require('../services/access.service')
 
 class AccessController {
   signup = async (req, res, next) => {
-    try {
-      console.log(req.body)
-      // 200 ok | 201 created
-      return res.status(201).json(await AccessService.signup(req.body))
-    } catch (error) {
-      next(error)
-    }
+    // return res.status(201).json(await AccessService.signup(req.body))
+
+    new CREATED({
+      message: 'Register ok!',
+      metadata: await AccessService.signup(req.body),
+      // giả sử ta muốn truyền thêm option thì làm như dưới
+      // options: {
+      //   limit: 10,
+      // },
+    }).send(res)
+
+    // cách dùng static
+    // CREATED.create({
+    //   message: 'Register ok!',
+    //   metadata: await AccessService.signup(req.body),
+    // }).send(res)
   }
 }
 
