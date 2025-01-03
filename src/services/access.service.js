@@ -17,6 +17,12 @@ const RoleShop = {
 }
 
 class AccessService {
+  static logout = async (keyStore) => {
+    const delKey = await KeyTokenService.removeKeyById(keyStore._id)
+
+    return delKey
+  }
+
   /*
    * Cái refreshtoken ở đây mang theo để khi user login lại nhung mà có cookie rồi thì bảo ae fe cũng
    * phải mang cái cookie đó đi theo để chúng ta biết user này hồi xưa dùng token này nè, muốn login
@@ -55,6 +61,7 @@ class AccessService {
     }
   }
 
+  // signup not using algorithm
   static signup = async ({ name, email, password }) => {
     // try {
     const holderShop = await shopModel.findOne({ email }).lean()
@@ -76,63 +83,29 @@ class AccessService {
     })
 
     if (newShop) {
-      // cách cơ bản
       const privateKey = crypto.randomBytes(64).toString('hex')
       const publicKey = crypto.randomBytes(64).toString('hex')
 
-      // cách nâng cao
-      // const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
-      //   modulusLength: 4096,
-      //   publicKeyEncoding: {
-      //     type: 'pkcs1',
-      //     format: 'pem',
-      //   },
-      //   privateKeyEncoding: {
-      //     type: 'pkcs1',
-      //     format: 'pem',
-      //   },
-      // })
-      // console.log({ privateKey, publicKey })
-
-      // save publicKey into database
+      // rsa chỉ lưu publickey vào db còn không xài rsa thì lưu cả 2
       const keyStore = await KeyTokenService.createKeyToken({
         userId: newShop._id,
         publicKey,
         privateKey,
       })
 
-      // cách nâng cao
-      // const publicKeyString = await KeyTokenService.createKeyToken({
-      //   userId: newShop._id,
-      //   publicKey,
-      // })
-
-      // if (!publicKeyString) { // cách nâng cao
       if (!keyStore) {
         return {
           code: 'xxxx',
           message: 'keyStore error!',
-          // message: 'publicKeyString error!',
         }
       }
-
-      // cách nâng cao
-      // console.log(`publicKeyString:`, publicKeyString)
-      // const publicKeyObject = crypto.createPublicKey(publicKeyString) // convert string to object
-      // console.log(`publicKeyObject:`, publicKeyObject)
-
-      // const tokens = await createTokenPair(
-      //   { userId: newShop._id, email },
-      //   publicKeyString,
-      //   privateKey
-      // )
 
       const tokens = await createTokenPair(
         { userId: newShop._id, email },
         publicKey,
         privateKey
       )
-      console.log('created token successful', tokens)
+      
       return {
         code: 201,
         metadata: {
@@ -157,6 +130,88 @@ class AccessService {
     //   }
     // }
   }
+
+  // signup using rsa
+  // static signup = async ({ name, email, password }) => {
+  //   try {
+  //     const holderShop = await shopModel.findOne({ email }).lean()
+  //     if (holderShop) {
+  //       return {
+  //         code: 'xxxx',
+  //         message: 'Email already register!',
+  //       }
+  //     }
+
+  //     // 10 là đẹp lớn hơn thì cpu phải mạnh
+  //     const passwordHash = await bcrypt.hash(password, 10)
+  //     const newShop = await shopModel.create({
+  //       name,
+  //       email,
+  //       password: passwordHash,
+  //       roles: [RoleShop.SHOP],
+  //     })
+
+  //     if (newShop) {
+  //       const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
+  //         modulusLength: 4096,
+  //         publicKeyEncoding: {
+  //           type: 'pkcs1',
+  //           format: 'pem',
+  //         },
+  //         privateKeyEncoding: {
+  //           type: 'pkcs1',
+  //           format: 'pem',
+  //         },
+  //       })
+  //       console.log({ privateKey, publicKey })
+
+  //       // save publicKey into database
+  //       const publicKeyString = await KeyTokenService.createKeyToken({
+  //         userId: newShop._id,
+  //         publicKey,
+  //       })
+
+  //       if (!publicKeyString) {
+  //         return {
+  //           code: 'xxxx',
+  //           message: 'publicKeyString error!',
+  //         }
+  //       }
+  //       console.log(`publicKeyString:`, publicKeyString)
+  //       const publicKeyObject = crypto.createPublicKey(publicKeyString) // convert string to object
+
+  //       console.log(`publicKeyObject:`, publicKeyObject)
+
+  //       const tokens = await createTokenPair(
+  //         { userId: newShop._id, email },
+  //         publicKeyString,
+  //         privateKey
+  //       )
+  //       console.log('created token successful', tokens)
+  //       return {
+  //         code: 201,
+  //         metadata: {
+  //           shop: getInfoData({
+  //             fileds: ['_id', 'name', 'email'],
+  //             object: newShop,
+  //           }),
+  //           tokens,
+  //         },
+  //       }
+  //     }
+
+  //     return {
+  //       code: 200,
+  //       metadata: null,
+  //     }
+  //   } catch (error) {
+  //     return {
+  //       code: 'xxx',
+  //       message: error.message,
+  //       status: 'error',
+  //     }
+  //   }
+  // }
 }
 
 module.exports = AccessService

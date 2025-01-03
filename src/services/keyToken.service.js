@@ -1,9 +1,15 @@
 'use strict'
 
+const {
+  Types: { ObjectId },
+} = require('mongoose')
 const keytokenModel = require('../models/keytoken.model')
 
 class KeyTokenService {
-  // static createKeyToken = async ({ userId, publicKey }) => { // cách nâng cao
+  /**
+   * save key and user id to db if id exists then update if not exist then create new
+   * @returns publicKey
+   */
   static createKeyToken = async ({
     userId,
     publicKey,
@@ -33,17 +39,29 @@ class KeyTokenService {
        * upsert true => nếu userId không tồn tại => create, có rồi => update
        * new true => trả về document sau khi update hoặc create, mặc định là trả về document trước update
        */
-
       const tokens = await keytokenModel.findOneAndUpdate(
         filter,
         update,
         options
       )
 
+      // --------------đoạn dưới này xài chung cho cả 3 level
       return tokens ? tokens.publicKey : null
     } catch (error) {
       return error
     }
+  }
+
+  static findByUserId = async (userId) => {
+    return await keytokenModel
+      .findOne({ user: ObjectId.createFromHexString(userId) })
+      .lean()
+  }
+
+  static removeKeyById = async (id) => {
+    const delKey = await keytokenModel.deleteOne({ _id: id })
+
+    return delKey
   }
 }
 
