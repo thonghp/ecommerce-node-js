@@ -11,7 +11,7 @@ const keyTokenSchema = new Schema(
     user: {
       type: Schema.Types.ObjectId, // reference to the user's objectid in the shop model
       required: true,
-      ref: 'shop', // reference to the document name of the shop model
+      ref: 'Shop', // reference to the document name of the shop model
     },
     privateKey: {
       type: String,
