@@ -8,6 +8,7 @@ const HEADER = {
   API_KEY: 'x-api-key',
   CLIENT_ID: 'x-client-id',
   AUTHORIZATION: 'authorization',
+  REFRESHTOKEN: 'x-token-id',
 }
 // create token pair with RSA algorithm
 // const createTokenPair = async (payload, publicKey, privateKey) => {
@@ -71,16 +72,32 @@ const createTokenPair = async (payload, publicKey, privateKey) => {
 }
 
 /**
- * check if user id and access token are passed in header if yes then decode access token to check if this is token of user id in header
+ * If there is refresh and access token check if it is valid then pass it all to the next middleware
  */
 const authentication = asyncHandler(async (req, res, next) => {
   // check userId missing
   const userId = req.headers[HEADER.CLIENT_ID]
   if (!userId) throw new AuthFailureError('Invalid Request')
 
-  // get access token
+  // get entire keyStore
   const keyStore = await findByUserId(userId)
   if (!keyStore) throw new NotFoundError('Not found keyStore')
+
+  if (req.headers[HEADER.REFRESHTOKEN]) {
+    try {
+      const refreshToken = req.headers[HEADER.REFRESHTOKEN]
+      const decodeUser = JWT.verify(refreshToken, keyStore.privateKey)
+      if (userId !== decodeUser.userId) {
+        throw new AuthFailureError('Invalid userId')
+      }
+      req.keyStore = keyStore
+      req.user = decodeUser
+      req.refreshToken = refreshToken
+      return next()
+    } catch (error) {
+      throw error
+    }
+  }
 
   const accessToken = req.headers[HEADER.AUTHORIZATION]
   if (!accessToken) throw new AuthFailureError('Invalid Request')
@@ -95,7 +112,14 @@ const authentication = asyncHandler(async (req, res, next) => {
     throw error
   }
 })
+
+// verify thành công sẽ lấy được userId và email
+const verifyJWT = async (token, keySecret) => {
+  return await JWT.verify(token, keySecret)
+}
+
 module.exports = {
   createTokenPair,
   authentication,
+  verifyJWT,
 }

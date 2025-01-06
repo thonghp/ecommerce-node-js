@@ -22,17 +22,20 @@ require('./dbs/init.mongodb')
 app.use('/', require('./routers'))
 
 // handling error---------------------------------------------------------------
-app.use((req, res, next) => { // tạo error 404 xử lý không có route nào khớp
+app.use((req, res, next) => {
+  // tạo error 404 xử lý không có route nào khớp
   const error = new Error('Not found')
   error.status = 404
   next(error) // chuyển sang middleware xử lý error
 })
 
-app.use((error, req, res, next) => { // xử lý đọc error (bao gồm error ở trên)
+app.use((error, req, res, next) => {
+  // xử lý đọc error (bao gồm error ở trên)
   const statusCode = error.status || 500
   return res.status(statusCode).json({
     status: 'error',
     code: statusCode,
+    //    stack: error.stack, // dùng để log ra xem lỗi dòng bao nhiêu
     message: error.message || 'Internal Server Error',
   })
 })

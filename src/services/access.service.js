@@ -6,7 +6,11 @@ const crypto = require('node:crypto')
 const KeyTokenService = require('./keyToken.service')
 const { createTokenPair } = require('../auth/authUtils')
 const { getInfoData } = require('../utils')
-const { BadRequestError, AuthFailureError } = require('../core/error.response')
+const {
+  BadRequestError,
+  AuthFailureError,
+  ForbidenError,
+} = require('../core/error.response')
 const { findByEmail } = require('./shop.service')
 
 const RoleShop = {
@@ -17,6 +21,38 @@ const RoleShop = {
 }
 
 class AccessService {
+  static handleRefreshToken = async ({ keyStore, user, refreshToken }) => {
+    const { userId, email } = user
+    if (keyStore.refreshTokensUsed.includes(refreshToken)) {
+      await KeyTokenService.deleteKeyById(userId)
+      throw new ForbidenError('Something wrong happened !! Pls re-login')
+    }
+
+    if (keyStore.refreshToken !== refreshToken)
+      throw new AuthFailureError('Invalid token')
+
+    const foundShop = await findByEmail({ email })
+    if (!foundShop) {
+      throw new AuthFailureError('Shop not registered')
+    }
+
+    const tokens = await createTokenPair(
+      { userId, email },
+      keyStore.publicKey,
+      keyStore.privateKey
+    )
+
+    await keyStore.updateOne({
+      $set: { refreshToken: tokens.refreshToken },
+      $addToSet: { refreshTokensUsed: refreshToken },
+    })
+
+    return {
+      user,
+      tokens,
+    }
+  }
+
   static logout = async (keyStore) => {
     const delKey = await KeyTokenService.removeKeyById(keyStore._id)
 
@@ -24,6 +60,10 @@ class AccessService {
   }
 
   /*
+   * Tại sao có refreshToken = null ở đây vì khi ta đăng ký mới hay login mới lần đầu tiên trong hệ
+   * thống thì refresh token = null. Còn khi ta login lại vì vấn đề nào đó ta xoá cookie đi hay login
+   * lại thì trong cookie và session ta sẽ có refresh token thì ta phải mang theo để đưa vào danh sách
+   * token đã sử dụng
    * Cái refreshtoken ở đây mang theo để khi user login lại nhung mà có cookie rồi thì bảo ae fe cũng
    * phải mang cái cookie đó đi theo để chúng ta biết user này hồi xưa dùng token này nè, muốn login
    * lại thì ta xoá cookie cũ đi khỏi truy vấn db làm cái gì để cho nó nhanh
@@ -105,7 +145,7 @@ class AccessService {
         publicKey,
         privateKey
       )
-      
+
       return {
         code: 201,
         metadata: {

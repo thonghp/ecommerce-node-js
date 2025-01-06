@@ -55,13 +55,28 @@ class KeyTokenService {
   static findByUserId = async (userId) => {
     return await keytokenModel
       .findOne({ user: ObjectId.createFromHexString(userId) })
-      .lean()
   }
 
   static removeKeyById = async (id) => {
     const delKey = await keytokenModel.deleteOne({ _id: id })
 
     return delKey
+  }
+
+  static findByRefreshTokenUsed = async (refreshToken) => {
+    return await keytokenModel
+      .findOne({ refreshTokensUsed: refreshToken })
+      .lean()
+  }
+
+  static deleteKeyById = async (userId) => {
+    return await keytokenModel.deleteOne({
+      user: ObjectId.createFromHexString(userId),
+    })
+  }
+
+  static findByRefreshToken = async (refreshToken) => {
+    return await keytokenModel.findOne({ refreshToken: refreshToken })
   }
 }
 
