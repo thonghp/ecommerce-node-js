@@ -10,6 +10,9 @@ const COLLECTION_NAME_CLOTHING = 'Clothes'
 const DOCUMENT_NAME_ELECTRONIC = 'Electronic'
 const COLLECTION_NAME_ELECTRONIC = 'Electronics'
 
+const DOCUMENT_NAME_FURNITURE = 'Furniture'
+const COLLECTION_NAME_FURNITURE = 'Furnitures'
+
 const productSchema = new Schema(
   {
     product_name: {
@@ -86,9 +89,29 @@ const electronicSchema = new Schema(
     collection: COLLECTION_NAME_ELECTRONIC,
   }
 )
+
+const furnitureSchema = new Schema(
+  {
+    brand: {
+      type: String,
+      required: true,
+    },
+    size: String,
+    material: String,
+    product_shop: {
+      type: Schema.Types.ObjectId,
+      ref: 'Shop',
+    },
+  },
+  {
+    timestamps: true,
+    collection: COLLECTION_NAME_FURNITURE,
+  }
+)
 //Export the model
 module.exports = {
   product: model(DOCUMENT_NAME_PRODUCT, productSchema),
   clothing: model(DOCUMENT_NAME_CLOTHING, clothingSchema),
   electronic: model(DOCUMENT_NAME_ELECTRONIC, electronicSchema),
+  furniture: model(DOCUMENT_NAME_FURNITURE, furnitureSchema),
 }
