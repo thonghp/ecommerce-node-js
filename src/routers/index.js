@@ -11,8 +11,8 @@ router.use(permission('0000'))
 
 // check permission có quyền truy cập không
 
-router.use('/v1/api', require('./access'))
 router.use('/v1/api/product', require('./product'))
+router.use('/v1/api/', require('./access'))
 // yarn start - curl http://localhost:3055/
 
 module.exports = router

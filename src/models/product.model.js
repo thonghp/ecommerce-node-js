@@ -1,6 +1,8 @@
 'use strict'
 
 const { model, Schema } = require('mongoose')
+const slugify = require('slugify')
+
 const DOCUMENT_NAME_PRODUCT = 'Product'
 const COLLECTION_NAME_PRODUCT = 'Products'
 
@@ -24,6 +26,7 @@ const productSchema = new Schema(
       default: true,
     },
     product_description: String,
+    product_slug: String,
     product_price: {
       type: Number,
       required: true,
@@ -45,12 +48,45 @@ const productSchema = new Schema(
       type: Schema.Types.Mixed,
       required: true,
     },
+    product_ratingAverage: {
+      type: Number,
+      default: 4.5,
+      min: [1, 'Rating must be above 1.0'],
+      max: [5, 'Rating must be below 5.0'],
+      set: (val) => Math.round(val * 10) / 10,
+    },
+    product_variations: {
+      type: Array,
+      default: [],
+    },
+    // tại sao không đặt prefix product ở trước vì nó không dùng để select nên không cần đặt prefix
+    isDraft: {
+      type: Boolean,
+      default: true, // nó là nháp nên khong được public
+      index: true, // đánh index nó luôn vì thằng này hay được sử dụng nhiều nhất
+      select: false, // Mỗi lần ta document findOne,... thì nó sẽ không lấy field này
+    },
+    isPublished: {
+      type: Boolean,
+      default: false,
+      index: true,
+      select: false,
+    },
   },
   {
     timestamps: true,
     collection: COLLECTION_NAME_PRODUCT,
   }
 )
+
+// Document middleware, run before save and create
+productSchema.pre('save', function (next) {
+  this.product_slug = slugify(this.product_name, { lower: true })
+  next()
+})
+
+// Create index for full text search
+productSchema.index({ product_name: 'text', product_description: 'text' })
 
 const clothingSchema = new Schema(
   {

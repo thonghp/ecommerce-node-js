@@ -7,6 +7,13 @@ const {
   furniture,
 } = require('../models/product.model')
 const { BadRequestError } = require('../core/error.response')
+const {
+  findAllDraftsForShop,
+  findAllPublishsForShop,
+  publishProductByShop,
+  unPublishProductByShop,
+  searchProductByUser,
+} = require('../models/repositories/product.repo')
 
 // define factory class to create product
 class ProductStrategy {
@@ -21,6 +28,34 @@ class ProductStrategy {
     if (!productClass)
       throw new BadRequestError(`Invalid product types ${type}`)
     return new productClass(payload).createProduct()
+  }
+
+  static async findAllDraftsForShop({ product_shop, limit = 50, skip = 0 }) {
+    const query = { product_shop, isDraft: true }
+    return await findAllDraftsForShop({ query, limit, skip })
+  }
+
+  static async findAllPublishsForShop({ product_shop, limit = 50, skip = 0 }) {
+    const query = { product_shop, isPublished: true }
+    return await findAllPublishsForShop({ query, limit, skip })
+  }
+
+  static async publishProductByShop({ product_id, product_shop }) {
+    return await publishProductByShop({
+      product_id,
+      product_shop,
+    })
+  }
+
+  static async unPublishProductByShop({ product_id, product_shop }) {
+    return await unPublishProductByShop({
+      product_id,
+      product_shop,
+    })
+  }
+
+  static async searchProduct({ keySearch }) {
+    return await searchProductByUser({ keySearch })
   }
 }
 
